@@ -60,11 +60,66 @@ public class SimulationService {
                 feedback = "Acceptable for chronic retention. Avoid aggressive ventilation.";
                 status = "normal";
             }
+        } else if (scenario.equalsIgnoreCase("Asthma")) {
+            if (rr > 20) {
+                abg = new ABGResult(7.52, 28, 95, 24, 98, 2);
+                feedback = "Patient may be hyperventilating during bronchospasm.";
+                status = "warning";
+            } else {
+                abg = new ABGResult(7.38, 40, 92, 24, 96, 0);
+                feedback = "Stable ventilation. Monitor airway resistance.";
+                status = "normal";
+            }
+        } else if (scenario.equalsIgnoreCase("Neuromuscular")) {
+            if (tv < 300) {
+                abg = new ABGResult(7.25, 60, 80, 24, 90, -2);
+                feedback = "Severe hypoventilation. Consider ventilatory support upgrade.";
+                status = "critical";
+            } else {
+                abg = new ABGResult(7.36, 45, 90, 24, 95, 0);
+                feedback = "Acceptable support. Monitor for fatigue.";
+                status = "normal";
+            }
+        } else if (scenario.equalsIgnoreCase("Sedation")) {
+            if (tv < 300 || rr < 8) {
+                abg = new ABGResult(7.22, 65, 78, 24, 90, -4);
+                feedback = "Sedation-induced respiratory depression. Urgent intervention needed.";
+                status = "critical";
+            } else {
+                abg = new ABGResult(7.34, 50, 85, 24, 93, -1);
+                feedback = "Mild hypoventilation. Monitor closely.";
+                status = "warning";
+            }
+        } else if (scenario.equalsIgnoreCase("Metabolic")) {
+            if (rr > 18) {
+                abg = new ABGResult(7.32, 30, 95, 18, 96, -4);
+                feedback = "Compensatory hyperventilation for metabolic acidosis.";
+                status = "warning";
+            } else {
+                abg = new ABGResult(7.28, 38, 92, 18, 94, -5);
+                feedback = "Inadequate compensation for acidosis. Increase ventilatory rate.";
+                status = "critical";
+            }
+        } else if (scenario.equalsIgnoreCase("PE")) {
+            abg = new ABGResult(7.40, 40, 72, 24, 90, 0);
+            feedback = "Suspected pulmonary embolism: Low oxygen despite normal CO2. Consider imaging.";
+            status = "warning";
+        } else if (scenario.equalsIgnoreCase("Obesity")) {
+            if (tv < 400) {
+                abg = new ABGResult(7.36, 50, 85, 28, 92, 1);
+                feedback = "Hypoventilation common in obesity. Consider higher tidal volume.";
+                status = "warning";
+            } else {
+                abg = new ABGResult(7.38, 45, 90, 26, 94, 0);
+                feedback = "Compensated ventilation in obesity hypoventilation syndrome.";
+                status = "normal";
+            }
         } else {
             abg = new ABGResult(7.40, 40, 95, 24, 97, 0);
             feedback = "Scenario not recognized. Default response given.";
             status = "normal";
         }
+
 
         return new SimulationResponse(abg, feedback, status);
     }
