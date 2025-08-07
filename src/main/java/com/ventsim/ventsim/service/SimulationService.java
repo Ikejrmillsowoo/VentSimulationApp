@@ -13,6 +13,7 @@ public class SimulationService {
         int rr = request.getRespiratoryRate();
         int peep = request.getPeep();
         int fio2 = request.getFio2();
+        // eventually I will add I-time, patient weight and calculation for normal/ predicted VT.
 
         ABGResult abg;
         String feedback;
