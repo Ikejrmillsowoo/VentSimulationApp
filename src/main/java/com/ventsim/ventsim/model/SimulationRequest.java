@@ -7,6 +7,7 @@ public class SimulationRequest {
     private int peep;
     private int fio2;
     private String mode;
+    private int weight;
 
     // Getters and Setters
     public String getScenario() { return scenario; }
@@ -21,4 +22,6 @@ public class SimulationRequest {
     public void setFio2(int fio2) { this.fio2 = fio2; }
     public String getMode() { return mode; }
     public void setMode(String mode) { this.mode = mode; }
+    public int getWeight() {return weight;}
+    public void setWeight(int weight) { this.weight = weight; }
 }

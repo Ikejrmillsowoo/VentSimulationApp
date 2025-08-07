@@ -13,18 +13,25 @@ public class SimulationService {
         int rr = request.getRespiratoryRate();
         int peep = request.getPeep();
         int fio2 = request.getFio2();
+        int weight = request.getWeight();
         // eventually I will add I-time, patient weight and calculation for normal/ predicted VT.
+        /*
+        * predictedTvLow = > (weight (in kgs) * 6)
+        * predictedTvLow = < (weight (in kgs) * 8)
+        * */
+        int lowWeightLimit = weight * 6;
+        int highWeightLimit = weight * 8;
 
         ABGResult abg;
         String feedback;
         String status;
 
         if (scenario.equalsIgnoreCase("Normal")) {
-            if (tv < 400 && rr < 10) {
+            if (tv < lowWeightLimit && rr < 10) {
                 abg = new ABGResult(7.28, 55, 88, 24, 95, 0);
                 feedback = "Hypoventilation: Increase tidal volume or rate.";
                 status = "warning";
-            } else if (tv > 700) {
+            } else if (tv > highWeightLimit) {
                 abg = new ABGResult(7.48, 28, 102, 24, 100, 2);
                 feedback = "Risk of respiratory alkalosis and barotrauma.";
                 status = "critical";
