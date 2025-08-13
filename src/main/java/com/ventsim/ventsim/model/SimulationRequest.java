@@ -8,6 +8,8 @@ public class SimulationRequest {
     private int fio2;
     private String mode;
     private int weight;
+    private Integer inspiratoryPressure;
+    private Integer supportPressure;
 
     // Getters and Setters
     public String getScenario() { return scenario; }
@@ -24,4 +26,9 @@ public class SimulationRequest {
     public void setMode(String mode) { this.mode = mode; }
     public int getWeight() {return weight;}
     public void setWeight(int weight) { this.weight = weight; }
+    public Integer getInspiratoryPressure() { return inspiratoryPressure; }
+    public void setInspiratoryPressure(Integer inspiratoryPressure) { this.inspiratoryPressure = inspiratoryPressure; }
+    public Integer getSupportPressure() { return supportPressure; }
+    public void setSupportPressure(Integer supportPressure) { this.supportPressure = supportPressure; }
+
 }
