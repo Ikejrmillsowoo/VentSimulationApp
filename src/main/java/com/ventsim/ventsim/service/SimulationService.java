@@ -3,10 +3,12 @@ package com.ventsim.ventsim.service;
 import com.ventsim.ventsim.model.ABGResult;
 import com.ventsim.ventsim.model.SimulationRequest;
 import com.ventsim.ventsim.model.SimulationResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SimulationService {
+
     public SimulationResponse simulate(SimulationRequest request) {
         String mode = request.getMode();
         String scenario = request.getScenario();
@@ -50,7 +52,7 @@ public class SimulationService {
             status = "warning";
         }
 
-        // Step 3: Modify values based on scenario
+        // Step 3: Modify values based on patient conditions/scenario
         if (scenario != null) {
             switch (scenario.toLowerCase()) {
                 case "ards":
@@ -102,5 +104,21 @@ public class SimulationService {
 
         ABGResult abg = new ABGResult(pH, paCO2, paO2, hco3, saO2, be);
         return new SimulationResponse(abg, feedback, status);
+    }
+
+    public String updateChangesLog(SimulationRequest request){
+
+       SimulationRequest newRequest = new SimulationRequest();
+       newRequest.setFio2(request.getFio2());
+       newRequest.setMode(request.getMode());
+       newRequest.setPeep(request.getPeep());
+       newRequest.setScenario(request.getScenario());
+       newRequest.setInspiratoryPressure(request.getInspiratoryPressure());
+       newRequest.setRespiratoryRate(request.getRespiratoryRate());
+       newRequest.setSupportPressure(request.getSupportPressure());
+
+
+
+       return "rice";
     }
 }

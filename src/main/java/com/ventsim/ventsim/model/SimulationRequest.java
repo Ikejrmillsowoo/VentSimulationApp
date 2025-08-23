@@ -11,6 +11,21 @@ public class SimulationRequest {
     private Integer inspiratoryPressure;
     private Integer supportPressure;
 
+    public SimulationRequest(String scenario, int tidalVolume, int respiratoryRate, int peep, int fio2, String mode, int weight, Integer inspiratoryPressure, Integer supportPressure) {
+        this.scenario = scenario;
+        this.tidalVolume = tidalVolume;
+        this.respiratoryRate = respiratoryRate;
+        this.peep = peep;
+        this.fio2 = fio2;
+        this.mode = mode;
+        this.weight = weight;
+        this.inspiratoryPressure = inspiratoryPressure;
+        this.supportPressure = supportPressure;
+    }
+
+    public SimulationRequest() {
+    }
+
     // Getters and Setters
     public String getScenario() { return scenario; }
     public void setScenario(String scenario) { this.scenario = scenario; }
