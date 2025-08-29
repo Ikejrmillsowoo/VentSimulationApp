@@ -6,8 +6,12 @@ import com.ventsim.ventsim.model.SimulationResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.text.DecimalFormat;
+
 @Service
 public class SimulationService {
+
+    private static final DecimalFormat df = new DecimalFormat("0.00");
 
     double paCO2 = 40;
     double paO2 = 95;
@@ -31,8 +35,7 @@ public class SimulationService {
 
         // Step 3: Modify values based on patient conditions/scenario
         returnScenario(scenario);
-
-        ABGResult abg = new ABGResult(pH, paCO2, paO2, hco3, saO2, be);
+        ABGResult abg = new ABGResult(df.format(this.pH), paCO2, paO2, hco3, saO2, be);
         return new SimulationResponse(abg, feedback, status);
         }
 

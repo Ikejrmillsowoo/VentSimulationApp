@@ -1,7 +1,7 @@
 package com.ventsim.ventsim.model;
 
 public class ABGResult {
-    private double pH;
+    private String pH;
     private double paCO2;
     private double paO2;
     private double hco3;
@@ -10,7 +10,7 @@ public class ABGResult {
 
     public ABGResult() {}
 
-    public ABGResult(double pH, double paCO2, double paO2, double hco3, double saO2, double be) {
+    public ABGResult(String pH, double paCO2, double paO2, double hco3, double saO2, double be) {
         this.pH = pH;
         this.paCO2 = paCO2;
         this.paO2 = paO2;
@@ -19,8 +19,8 @@ public class ABGResult {
         this.be = be;
     }
 
-    public double getpH() { return pH; }
-    public void setpH(double pH) { this.pH = pH; }
+    public String getpH() { return pH; }
+    public void setpH(String pH) { this.pH = pH; }
     public double getPaCO2() { return paCO2; }
     public void setPaCO2(double paCO2) { this.paCO2 = paCO2; }
     public double getPaO2() { return paO2; }
