@@ -8,6 +8,7 @@ public class SimulationRequest {
     private int fio2;
     private String mode;
     private int weight;
+    private int targetVolume;
     private Integer inspiratoryPressure;
     private Integer supportPressure;
 
@@ -21,10 +22,13 @@ public class SimulationRequest {
         this.weight = weight;
         this.inspiratoryPressure = inspiratoryPressure;
         this.supportPressure = supportPressure;
+        this.targetVolume = weight * 7;
     }
 
     public SimulationRequest() {
     }
+
+
 
     // Getters and Setters
     public String getScenario() { return scenario; }
@@ -46,4 +50,11 @@ public class SimulationRequest {
     public Integer getSupportPressure() { return supportPressure; }
     public void setSupportPressure(Integer supportPressure) { this.supportPressure = supportPressure; }
 
+    public int getTargetVolume() {
+        return targetVolume;
+    }
+
+    public void setTargetVolume(int targetVolume) {
+        this.targetVolume = targetVolume;
+    }
 }
