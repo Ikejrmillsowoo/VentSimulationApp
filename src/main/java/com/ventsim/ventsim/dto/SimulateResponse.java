@@ -1,4 +1,9 @@
 package com.ventsim.ventsim.dto;
 
-public class SimulateResponse {
-}
+import com.ventsim.ventsim.model.Abg;
+
+public record SimulateResponse(
+    Abg abg,
+    String feedback,
+    String status
+){}
