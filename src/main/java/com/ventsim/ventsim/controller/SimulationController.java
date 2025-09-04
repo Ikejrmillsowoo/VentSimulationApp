@@ -2,7 +2,7 @@ package com.ventsim.ventsim.controller;
 
 import com.ventsim.ventsim.model.SimulationRequest;
 import com.ventsim.ventsim.model.SimulationResponse;
-import com.ventsim.ventsim.service.PreliminarySettingsService;
+//import com.ventsim.ventsim.service.PreliminarySettingsService;
 import com.ventsim.ventsim.service.SimulationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class SimulationController {
     @Autowired
     private SimulationService simulationService;
-    @Autowired
-    private PreliminarySettingsService preliminarySettingsService;
+//    @Autowired
+//    private PreliminarySettingsService preliminarySettingsService;
 
     @PostMapping
     public ResponseEntity<SimulationResponse> runSimulation(@RequestBody SimulationRequest request) {
