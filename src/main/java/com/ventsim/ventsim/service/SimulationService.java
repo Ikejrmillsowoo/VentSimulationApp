@@ -5,6 +5,8 @@ import com.ventsim.ventsim.dto.InitResponse;
 import com.ventsim.ventsim.dto.SimulateRequest;
 import com.ventsim.ventsim.dto.SimulateResponse;
 import com.ventsim.ventsim.model.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,13 +17,15 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 public class SimulationService {
     private final Map<String, PatientState> store = new ConcurrentHashMap<>();
+    private static final Logger log = LoggerFactory.getLogger(SimulationService.class);
+
 
     public InitResponse init(InitRequest req) {
         Scenario scenario = Scenario.parse(req.scenario);
         Mode mode = Mode.parse(req.mode);
 
         double weightKg = (req.weight == null) ? 0.0 : Math.max(0.0, req.weight);
-        double vtInit = (req.tidalVolume != null) ? req.tidalVolume : 500.0; // default 500 mL if no weight or tv
+        double vtInit = (req.tidalVolume != null) ? req.tidalVolume : 500.0; // default 500 mL if no TV provided
         int rr = (req.respiratoryRate != null) ? Math.max(6, req.respiratoryRate) : 16;
         double peep = (req.peep != null) ? Math.max(0, req.peep) : 5.0;
         double fio2 = Units.fio2ToFrac((req.fio2 != null) ? req.fio2 : 21);
@@ -30,11 +34,11 @@ public class SimulationService {
 
         var prof = DiseaseProfiles.forScenario(scenario);
         Abg abg0 = AbgCalculator.initAbgOrDefault(req.abg, req.scenario);
+
         PatientState state = new PatientState(
                 scenario, mode, weightKg, vtInit, rr, peep, fio2, pinsp, psv,
                 abg0, prof.compliance(), prof.resistance(), prof.shunt()
         );
-
         store.put(state.id(), state);
 
         double[] target = AbgCalculator.vtTargetRange(weightKg);
@@ -45,6 +49,9 @@ public class SimulationService {
     }
 
     public SimulateResponse simulate(SimulateRequest req) {
+        // log the incoming payload (trim if too verbose)
+        log.info("simulate stateId={} scenario={} mode={} payload={}",
+                req.stateId, req.scenario, req.mode, req);
         PatientState s = store.get(req.stateId);
         if (s == null) {
             return new SimulateResponse(
@@ -57,33 +64,49 @@ public class SimulationService {
         Scenario scenario = Scenario.parse(req.scenario);
         Mode mode = Mode.parse(req.mode);
 
-        // Allow scenario/mode to change (e.g., VC → PC)
+        // Allow scenario/mode to change mid-flight
         var prof = DiseaseProfiles.forScenario(scenario);
-        // Update mechanics if scenario changed
         PatientState current = new PatientState(
-                scenario, mode, (req.weight != null && req.weight > 0) ? req.weight : s.weightKg(),
-                s.vtMl(), s.rr(), s.peep(), s.fio2Frac(), s.inspPressure(), s.supportPressure(),
+                scenario, mode,
+                (req.weight != null && req.weight > 0) ? req.weight : s.weightKg(),
+                s.vtMl(), s.rr(), s.peep(), s.fio2Frac(),
+                s.inspPressure(), s.supportPressure(),
                 s.abg(), prof.compliance(), prof.resistance(), prof.shunt()
         );
 
-        double vtMl = Math.max(100, req.tidalVolume);
-        int rr = Math.max(6, req.respiratoryRate);
-        double peep = Math.max(0, req.peep);
-        double fio2 = Units.fio2ToFrac(req.fio2);
-        Double pinsp = Double.valueOf((req.inspiratoryPressure != null) ? Math.max(0, req.inspiratoryPressure) : null);
-        Double psv = Double.valueOf((req.supportPressure != null) ? Math.max(0, req.supportPressure) : null);
+        // ---- SAFE DEFAULTS (do NOT auto-unbox) ----
+        Integer rrReq   = req.respiratoryRate;
+        Integer peepReq = req.peep;
+        Integer fio2Req = req.fio2;           // integer like 21, 40, 100
+        Integer vtReq   = req.tidalVolume;    // only used directly in VC
+        Integer pinspReq= req.inspiratoryPressure;
+        Integer psvReq  = req.supportPressure;
 
-        // Apply new vent settings to compute ABG
-        Abg abgNew = AbgCalculator.nextAbg(current, vtMl, rr, peep, fio2);
+        // New settings
+        int rr = (rrReq != null) ? Math.max(6, rrReq) : s.rr();
+        double peep = (peepReq != null) ? Math.max(0, peepReq) : s.peep();
+        double fio2 = (fio2Req != null) ? Units.fio2ToFrac(fio2Req) : s.fio2Frac();
 
-        // Update state store
-        current.setVent(vtMl, rr, peep, fio2, pinsp, psv);
-        current.setAbg(abgNew);
+        Double pinsp = Double.valueOf((pinspReq != null) ? Math.max(0, pinspReq) : null); // delta above PEEP for PC
+        Double psv   = Double.valueOf((psvReq   != null) ? Math.max(0, psvReq)   : null); // PS above PEEP for PSV
+
+        // VC uses the requested TV; PC/PSV compute TV from pressure*compliance
+        double vtRequested = (vtReq != null) ? Math.max(100.0, vtReq) : s.vtMl();
+
+        double vtMlFromMode = AbgCalculator.computeVtMlFromMode(
+                mode, vtRequested, pinsp, psv, peep, current.compliance(), current.weightKg()
+        );
+
+        AbgCalculator.AbgResult res = AbgCalculator.nextAbg(current, vtMlFromMode, rr, peep, fio2);
+
+        current.setVent(vtMlFromMode, rr, peep, fio2, pinsp, psv);
+        current.setAbg(res.abg);
         store.put(s.id(), current);
 
-        String status = FeedbackEngine.status(abgNew);
-        String feedback = FeedbackEngine.feedback(scenario, abgNew);
-        return new SimulateResponse(abgNew, feedback, status);
+        String status = res.fatal ? "critical" : FeedbackEngine.status(res.abg);
+        String feedback = res.fatal ? "Patient did not make it." : FeedbackEngine.feedback(scenario, res.abg);
+
+        return new SimulateResponse(res.abg, feedback, status);
     }
 //
 //    private static final DecimalFormat df = new DecimalFormat("0.00");
