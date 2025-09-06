@@ -74,21 +74,22 @@ public class SimulationService {
                 s.abg(), prof.compliance(), prof.resistance(), prof.shunt()
         );
 
-        // ---- SAFE DEFAULTS (do NOT auto-unbox) ----
-        Integer rrReq   = req.respiratoryRate;
-        Integer peepReq = req.peep;
-        Integer fio2Req = req.fio2;           // integer like 21, 40, 100
-        Integer vtReq   = req.tidalVolume;    // only used directly in VC
-        Integer pinspReq= req.inspiratoryPressure;
-        Integer psvReq  = req.supportPressure;
+        // inside simulate(..) AFTER you load the current state `s` and build `current`
+        Integer rrReq        = req.getRespiratoryRate();      // could be null
+        Integer peepReq      = req.getPeep();                 // could be null
+        Integer fio2Req      = req.getFio2();                 // could be null (e.g., 21, 40, 100)
+        Integer vtReq        = req.getTidalVolume();          // could be null (VC only)
+        Integer pinspReq     = req.getInspiratoryPressure();  // could be null (PC)
+        Integer psvReq       = req.getSupportPressure();      // could be null (PSV)
 
-        // New settings
-        int rr = (rrReq != null) ? Math.max(6, rrReq) : s.rr();
-        double peep = (peepReq != null) ? Math.max(0, peepReq) : s.peep();
-        double fio2 = (fio2Req != null) ? Units.fio2ToFrac(fio2Req) : s.fio2Frac();
+        // DEFAULTS that never auto-unbox
+        int rr              = (rrReq   != null) ? Math.max(6, rrReq) : s.rr();
+        double peep         = (peepReq != null) ? Math.max(0, peepReq) : s.peep();
+        double fio2Frac     = Units.fio2ToFrac(fio2Req, s.fio2Frac()); // null-safe overload
 
-        Double pinsp = Double.valueOf((pinspReq != null) ? Math.max(0, pinspReq) : null); // delta above PEEP for PC
-        Double psv   = Double.valueOf((psvReq   != null) ? Math.max(0, psvReq)   : null); // PS above PEEP for PSV
+        Double pinsp        = (pinspReq != null) ? Double.valueOf(Math.max(0, pinspReq)) : null;
+        Double psv          = (psvReq   != null) ? Double.valueOf(Math.max(0, psvReq))   : null;
+
 
         // VC uses the requested TV; PC/PSV compute TV from pressure*compliance
         double vtRequested = (vtReq != null) ? Math.max(100.0, vtReq) : s.vtMl();
@@ -97,15 +98,16 @@ public class SimulationService {
                 mode, vtRequested, pinsp, psv, peep, current.compliance(), current.weightKg()
         );
 
-        AbgCalculator.AbgResult res = AbgCalculator.nextAbg(current, vtMlFromMode, rr, peep, fio2);
+        // Compute next ABG
+        AbgCalculator.AbgResult res = AbgCalculator.nextAbg(current, vtMlFromMode, rr, peep, fio2Frac);
 
-        current.setVent(vtMlFromMode, rr, peep, fio2, pinsp, psv);
+        // Update and return
+        current.setVent(vtMlFromMode, rr, peep, fio2Frac, pinsp, psv);
         current.setAbg(res.abg);
         store.put(s.id(), current);
 
-        String status = res.fatal ? "critical" : FeedbackEngine.status(res.abg);
+        String status   = res.fatal ? "critical" : FeedbackEngine.status(res.abg);
         String feedback = res.fatal ? "Patient did not make it." : FeedbackEngine.feedback(scenario, res.abg);
-
         return new SimulateResponse(res.abg, feedback, status);
     }
 //
