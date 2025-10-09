@@ -12,5 +12,6 @@ public class InitRequest {
     public Integer peep;           // cmH2O
     public Integer fio2;           // % (e.g., 21, 40, 100)
     public String note;
+    public Double insPressure;    // cmH2O (PC)
     public Abg abg;                // optional seed
 }

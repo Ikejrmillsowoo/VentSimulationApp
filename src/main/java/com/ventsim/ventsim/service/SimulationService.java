@@ -28,7 +28,7 @@ public class SimulationService {
         int rr = (req.respiratoryRate != null) ? Math.max(6, req.respiratoryRate) : 16;
         double peep = (req.peep != null) ? Math.max(0, req.peep) : 5.0;
         double fio2 = Units.fio2ToFrac((req.fio2 != null) ? req.fio2 : 21);
-        Double pinsp = null;
+        Double pinsp = (req.insPressure != null) ? Math.max(0.0, req.insPressure) : null;
         Double psv = null;
 
         var prof = DiseaseProfiles.forScenario(scenario);
@@ -73,7 +73,7 @@ public class SimulationService {
                 s.abg(), prof.compliance(), prof.resistance(), prof.shunt()
         );
 
-        // inside simulate(..) AFTER you load the current state `s` and build `current`
+        // inside simulate(..) AFTER you load the current state and build the current`
         Integer rrReq        = req.getRespiratoryRate();      // could be null
         Integer peepReq      = req.getPeep();                 // could be null
         Integer fio2Req      = req.getFio2();                 // could be null (e.g., 21, 40, 100)

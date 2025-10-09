@@ -13,7 +13,7 @@ public final class FeedbackEngine {
         if (a.paCO2() > 55) sb.append("Hypoventilation: consider ↑RR or ↑Vt (watch plateau/auto-PEEP). ");
         if (a.paCO2() < 30) sb.append("Hyperventilation: risk of alkalosis; consider ↓RR or ↓Vt. ");
         if (a.paO2() < 60)  sb.append("Hypoxemia: consider ↑FiO2 or ↑PEEP. ");
-        if (a.pH() < 7.25)  sb.append("Acidemia: correct ventilation; evaluate metabolic status. ");
+        if (a.pH() < 7.25)  sb.append("Acidotic: correct ventilation; evaluate metabolic status. ");
         if (a.pH() > 7.55)  sb.append("Alkalemia: reduce minute ventilation if appropriate. ");
 
         if (sc == Scenario.ARDS) sb.append("ARDS: favor low Vt (4–6 mL/kg), higher PEEP strategy. ");
