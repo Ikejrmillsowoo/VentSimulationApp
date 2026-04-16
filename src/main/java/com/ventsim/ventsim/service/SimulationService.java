@@ -18,6 +18,12 @@ public class SimulationService {
     private final Map<String, PatientState> store = new ConcurrentHashMap<>();
     private static final Logger log = LoggerFactory.getLogger(SimulationService.class);
 
+    private final FeedbackEngine feedbackEngine;  // ← add this
+
+    public SimulationService(FeedbackEngine feedbackEngine) {  // ← inject via constructor
+        this.feedbackEngine = feedbackEngine;
+    }
+
 
     public InitResponse init(InitRequest req) {
         Scenario scenario = Scenario.parse(req.scenario);
@@ -41,8 +47,9 @@ public class SimulationService {
         store.put(state.id(), state);
 
         double[] target = AbgCalculator.vtTargetRange(weightKg);
-        String status = FeedbackEngine.status(abg0);
-        String feedback = FeedbackEngine.feedback(scenario, abg0);
+
+        String status = feedbackEngine.status(abg0);
+        String feedback = feedbackEngine.feedback(scenario, abg0);
 
         return new InitResponse(state.id(), target[0], target[1], abg0, feedback, status);
     }
@@ -106,8 +113,8 @@ public class SimulationService {
         current.setAbg(res.abg);
         store.put(s.id(), current);
 
-        String status   = res.fatal ? "critical" : FeedbackEngine.status(res.abg);
-        String feedback = res.fatal ? "Patient did not make it." : FeedbackEngine.feedback(scenario, res.abg);
+        String status   = res.fatal ? "critical" : feedbackEngine.status(res.abg);
+        String feedback = res.fatal ? "Patient did not make it." : feedbackEngine.feedback(scenario, res.abg);
         return new SimulateResponse(res.abg, feedback, status);
     }
 
