@@ -140,6 +140,9 @@ public final class AbgCalculator {
             case COPD   -> 0.50;
             case ARDS   -> 0.40;
             case ASTHMA -> 0.55;
+            case PE     -> 0.60;
+            case SEDATION -> 0.25;
+            case NEUROMUSCULAR_DISEASE -> 0.30;
         };
 
         double vdvtNow  = vdvt(baseVDVT, newRr, newPeep, s.resistance());

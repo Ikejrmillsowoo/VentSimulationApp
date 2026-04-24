@@ -11,6 +11,9 @@ public class DiseaseProfiles {
             case COPD   -> new Profile(60, 25, 0.12);
             case ARDS   -> new Profile(20, 12, 0.30);
             case ASTHMA -> new Profile(45, 35, 0.10);
+            case  PE    -> new Profile(90, 3, 0.08);
+            case  SEDATION    -> new Profile(100, 2, 0.05);
+            case  NEUROMUSCULAR_DISEASE    -> new Profile(90, 3, 0.08);
         };
     }
 }
