@@ -9,7 +9,7 @@ public class WebConfiguration implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOrigins("http://localhost:3000", "http://127.0.0.0:3000", "https://ventsimulationapp.onrender.com") // adjust to your frontend port
+                .allowedOrigins("http://localhost:3000", "http://127.0.0.0:3000", "https://vent-sim-front.vercel.app/") // adjust to your frontend port
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*");
 
